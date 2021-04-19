@@ -22,5 +22,10 @@ public class Notification {
     private User user;
 
     @Column(length = 100, nullable = false, unique = true)
-    private String device;
+    @Setter
+    private String token;
+
+    @Column(nullable = false)
+    @Setter
+    private Boolean isTokenNotExpired;
 }

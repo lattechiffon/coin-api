@@ -19,18 +19,12 @@ public class CoinServiceImpl implements CoinService {
     private final CoinRepository coinRepository;
 
     @Override
-    public List<CoinDTO> getUserCoins(String username) throws UsernameNotFoundException {
-        List<Coin> coins = coinRepository.findByUserAndIsCoinNotExpiredFalse(userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("The username is not found.")));
-
+    public List<CoinDTO> getCoins(String coinname) {
+        List<Coin> coins = coinRepository.findByCoinnameAndIsCoinNotExpiredTrue(coinname);
         List<CoinDTO> coinDTOs = new ArrayList<>();
 
         for (Coin coin : coins) {
-            CoinDTO coinDTO = new CoinDTO();
-            coinDTO.setCoinname(coin.getCoinname());
-            coinDTO.setUsername(coin.getUser().getUsername());
-            coinDTO.setBreakEvenPrice(coin.getBreakEvenPrice());
-            coinDTO.setTargetPrice(coin.getTargetPrice());
+            CoinDTO coinDTO = new CoinDTO(coin);
 
             coinDTOs.add(coinDTO);
         }
@@ -39,14 +33,30 @@ public class CoinServiceImpl implements CoinService {
     }
 
     @Override
-    public void setUserCoin(String username, CoinDTO coinDTO) throws Exception {
+    public List<CoinDTO> getUserCoins(String username) throws UsernameNotFoundException {
+        List<Coin> coins = coinRepository.findByUserAndIsCoinNotExpiredTrue(userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("The username is not found.")));
+
+        List<CoinDTO> coinDTOs = new ArrayList<>();
+
+        for (Coin coin : coins) {
+            CoinDTO coinDTO = new CoinDTO(coin);
+
+            coinDTOs.add(coinDTO);
+        }
+
+        return coinDTOs;
+    }
+
+    @Override
+    public void setUserCoin(String username, CoinDTO coinDTO) {
         Coin coin = new Coin();
         coin.setUser(userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("The username is not found.")));
         coin.setCoinname(coinDTO.getCoinname());
         coin.setBreakEvenPrice(coinDTO.getBreakEvenPrice());
         coin.setTargetPrice(coinDTO.getTargetPrice());
-        coin.setIsCoinNotExpired(false);
+        coin.setIsCoinNotExpired(true);
         coinRepository.save(coin);
     }
 }

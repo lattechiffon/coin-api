@@ -1,7 +1,8 @@
 package com.lattechiffon.coinapi.scheduler;
 
-import com.lattechiffon.coinapi.domain.Coin;
-import com.lattechiffon.coinapi.repository.CoinRepository;
+import com.lattechiffon.coinapi.dto.CoinDTO;
+import com.lattechiffon.coinapi.service.CoinService;
+import com.lattechiffon.coinapi.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -15,6 +16,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -24,9 +26,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UpbitScheduler {
 
-    private final CoinRepository coinRepository;
+    private final CoinService coinService;
+    private final NotificationService notificationService;
 
     @Scheduled(cron = "0/3 * * * * *", zone = "Asia/Seoul")
+    @Transactional(readOnly = true)
     public void checkTickerPrice() {
 
         CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
@@ -49,14 +53,16 @@ public class UpbitScheduler {
                 for (Object o : jsonArray) {
                     double tradePrice = Double.parseDouble(((JSONObject) o).get("trade_price").toString());
 
-                    List<Coin> coins = coinRepository.findByCoinnameAndIsCoinNotExpiredFalse(((JSONObject) o).get("market").toString());
+                    List<CoinDTO> coinDTOs = coinService.getCoins(((JSONObject) o).get("market").toString());
 
-                    for (Coin coin : coins) {
-                        if (coin.getTargetPrice() * 0.9 >= tradePrice) {
+                    for (CoinDTO coinDTO : coinDTOs) {
+                        System.out.printf("User: " + coinDTO.getUsername() + " = My " + coinDTO.getCoinname() + " trade price: " + coinDTO.getBreakEvenPrice() + " / My target price: " + coinDTO.getTargetPrice() + " / Upbit trade price: %.1f\n", tradePrice);
+
+                        /*if (coin.getTargetPrice() * 0.9 >= tradePrice) {
                             System.out.println("[notification] Please ready for selling.");
                         } else if (coin.getBreakEvenPrice() <= tradePrice * 1.3) {
                             System.out.println("[notification] Too much low price");
-                        }
+                        }*/
                     }
                 }
             }
