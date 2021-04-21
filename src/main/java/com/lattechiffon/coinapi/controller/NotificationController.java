@@ -2,7 +2,6 @@ package com.lattechiffon.coinapi.controller;
 
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.lattechiffon.coinapi.config.security.JwtTokenProvider;
-import com.lattechiffon.coinapi.dto.NotificationDTO;
 import com.lattechiffon.coinapi.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +18,7 @@ public class NotificationController {
     private final JwtTokenProvider jwtTokenProvider;
 
     @GetMapping(value = "")
-    public List<NotificationDTO> getNotificationTokens(@RequestHeader("Authorization") String token) {
+    public List<String> getNotificationTokens(@RequestHeader("Authorization") String token) {
         return notificationService.getNotificationTokens(jwtTokenProvider.getUserIdx(token));
     }
 

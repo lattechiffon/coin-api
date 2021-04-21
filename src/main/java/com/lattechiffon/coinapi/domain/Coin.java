@@ -17,14 +17,14 @@ public class Coin {
     @Column(name = "idx")
     private Long id;
 
-    @ManyToOne(targetEntity = User.class, fetch = FetchType.LAZY)
+    @ManyToOne(targetEntity = User.class)
     @JoinColumn(name = "user_idx")
     @Setter
     private User user;
 
-    @Column(length = 30, nullable = false)
+    @ManyToOne(targetEntity = Market.class)
     @Setter
-    private String coinname;
+    private Market market;
 
     @Column(nullable = false)
     @Setter

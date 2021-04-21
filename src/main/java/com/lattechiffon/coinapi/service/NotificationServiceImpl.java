@@ -1,10 +1,7 @@
 package com.lattechiffon.coinapi.service;
 
 import com.google.firebase.messaging.*;
-import com.lattechiffon.coinapi.domain.Coin;
 import com.lattechiffon.coinapi.domain.Notification;
-import com.lattechiffon.coinapi.dto.CoinDTO;
-import com.lattechiffon.coinapi.dto.NotificationDTO;
 import com.lattechiffon.coinapi.repository.NotificationRepository;
 import com.lattechiffon.coinapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,19 +20,13 @@ public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
 
     @Override
-    public List<NotificationDTO> getNotificationTokens(String username) {
+    public List<String> getNotificationTokens(String username) {
         List<Notification> notifications = notificationRepository.findByUserAndIsTokenNotExpiredTrue(userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("The username is not found.")));
 
-        List<NotificationDTO> notificationDTOs = new ArrayList<>();
-
-        for (Notification notification : notifications) {
-            NotificationDTO notificationDTO = new NotificationDTO(notification);
-
-            notificationDTOs.add(notificationDTO);
-        }
-
-        return notificationDTOs;
+        return notifications.stream()
+                .map(Notification::getToken)
+                .collect(Collectors.toList());
     }
 
     @Override

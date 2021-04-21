@@ -8,4 +8,5 @@ public interface CoinService {
     List<CoinDTO> getCoins(String coinname);
     List<CoinDTO> getUserCoins(String username);
     void setUserCoin(String username, CoinDTO coinDTO);
+    void setUserCoinExpired(CoinDTO coinDTO);
 }
